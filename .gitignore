@@ -1,0 +1,3 @@
+# 無視するディレクトリ
+docker/pgadmin/
+docker/postgres/
