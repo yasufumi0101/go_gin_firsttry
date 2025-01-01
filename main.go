@@ -23,5 +23,8 @@ func main() {
 	r := gin.Default()
 	r.GET("/items", ItemController.FindAll)
 	r.GET("/items/:id", ItemController.FindById)
+	r.POST("/items", ItemController.Create)
+	r.PUT("/items/:id", ItemController.Update)
+	r.DELETE("/items/:id", ItemController.Delete)
 	r.Run("localhost:8080") // 0.0.0.0:8080 でサーバーを立てます。
 }

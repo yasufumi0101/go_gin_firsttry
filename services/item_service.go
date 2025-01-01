@@ -1,6 +1,7 @@
 package services
 
 import (
+	"gin-practice/dto"
 	"gin-practice/models"
 	"gin-practice/repositories"
 )
@@ -8,6 +9,9 @@ import (
 type IItemService interface {
 	FindAll() (*[]models.Item, error)
 	FindById(itemId uint) (*models.Item, error)
+	Create(CreateItemInput dto.CreateItemInput) (*models.Item, error)
+	Update(itemId uint, updateItemInput dto.UpdateItemInput) (*models.Item, error)
+	Delete(ItemId uint) error
 }
 
 type ItemService struct {
@@ -24,4 +28,42 @@ func (s *ItemService) FindAll() (*[]models.Item, error) {
 
 func (s *ItemService) FindById(itemId uint) (*models.Item, error) {
 	return s.repository.FindById(itemId)
+}
+
+func (s *ItemService) Create(CreateItemInput dto.CreateItemInput) (*models.Item, error) {
+	newItem := models.Item{
+		Name:        CreateItemInput.Name,
+		Price:       CreateItemInput.Price,
+		Description: CreateItemInput.Description,
+		SoldOut:     false,
+	}
+	return s.repository.Create(newItem)
+}
+
+func (s *ItemService) Update(itemId uint, updateItemInput dto.UpdateItemInput) (*models.Item, error){
+	targetItem, err := s.FindById(itemId)
+	if err != nil {
+		return nil, err
+	}
+
+	if updateItemInput.Name != nil{
+		targetItem.Name = *updateItemInput.Name
+	}
+
+	if updateItemInput.Price != nil{
+		targetItem.Price = *updateItemInput.Price
+	}
+
+	if updateItemInput.Description != nil{
+		targetItem.Description = *updateItemInput.Description
+	}
+
+	if updateItemInput.SoldOut != nil{
+		targetItem.SoldOut = *updateItemInput.SoldOut
+	}
+	return s.repository.Update(*targetItem)
+}
+
+func (s *ItemService) Delete(itemId uint) error {
+	return s.repository.Delete(itemId)
 }
