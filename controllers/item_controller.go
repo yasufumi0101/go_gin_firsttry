@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"gin-practice/dto"
+	"gin-practice/models"
 	"gin-practice/services"
 	"net/http"
 	"strconv"
@@ -55,13 +56,21 @@ func (c *ItemController) FindById(ctx *gin.Context) {
 }
 
 func (c *ItemController) Create(ctx *gin.Context) {
+	user, exists := ctx.Get("user")
+	if !exists {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	userId := user.(*models.User).ID
+
 	var input dto.CreateItemInput
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	newItem, err := c.service.Create(input)
+	newItem, err := c.service.Create(input, userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -69,7 +78,7 @@ func (c *ItemController) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{"data": newItem})
 }
 
-func (c *ItemController) Update(ctx *gin.Context){
+func (c *ItemController) Update(ctx *gin.Context) {
 	itemId, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id"})

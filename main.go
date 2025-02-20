@@ -3,6 +3,7 @@ package main
 import (
 	"gin-practice/controllers"
 	"gin-practice/infra"
+	"gin-practice/middlewares"
 
 	//"gin-practice/models"
 	"gin-practice/repositories"
@@ -26,11 +27,22 @@ func main() {
 	itemService := services.NewItemService(itemRepository)
 	ItemController := controllers.NewItemController(itemService)
 
+	authRepository := repositories.NewAuthRepository(db)
+	authService := services.NewAuthService(authRepository)
+	authController := controllers.NewAuthController(authService)
+
 	r := gin.Default()
-	r.GET("/items", ItemController.FindAll)
-	r.GET("/items/:id", ItemController.FindById)
-	r.POST("/items", ItemController.Create)
-	r.PUT("/items/:id", ItemController.Update)
-	r.DELETE("/items/:id", ItemController.Delete)
+	itemRouter := r.Group("/items")
+	itemRouterWithAuth := r.Group("/items", middlewares.AuthMiddleware(authService))
+	authRouter := r.Group("/auth")
+
+	itemRouter.GET("", ItemController.FindAll)
+	itemRouter.GET("/:id", ItemController.FindById)
+	itemRouterWithAuth.POST("", ItemController.Create)
+	itemRouter.PUT("/:id", ItemController.Update)
+	itemRouter.DELETE("/:id", ItemController.Delete)
+
+	authRouter.POST("/signup", authController.Signup)
+	authRouter.POST("/login", authController.Login)
 	r.Run("localhost:8080") // 0.0.0.0:8080 でサーバーを立てます。
 }

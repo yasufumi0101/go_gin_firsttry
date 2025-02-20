@@ -9,7 +9,7 @@ import (
 type IItemService interface {
 	FindAll() (*[]models.Item, error)
 	FindById(itemId uint) (*models.Item, error)
-	Create(CreateItemInput dto.CreateItemInput) (*models.Item, error)
+	Create(CreateItemInput dto.CreateItemInput, userId uint) (*models.Item, error)
 	Update(itemId uint, updateItemInput dto.UpdateItemInput) (*models.Item, error)
 	Delete(ItemId uint) error
 }
@@ -30,35 +30,36 @@ func (s *ItemService) FindById(itemId uint) (*models.Item, error) {
 	return s.repository.FindById(itemId)
 }
 
-func (s *ItemService) Create(CreateItemInput dto.CreateItemInput) (*models.Item, error) {
+func (s *ItemService) Create(CreateItemInput dto.CreateItemInput, userId uint) (*models.Item, error) {
 	newItem := models.Item{
 		Name:        CreateItemInput.Name,
 		Price:       CreateItemInput.Price,
 		Description: CreateItemInput.Description,
 		SoldOut:     false,
+		UserID:      userId,
 	}
 	return s.repository.Create(newItem)
 }
 
-func (s *ItemService) Update(itemId uint, updateItemInput dto.UpdateItemInput) (*models.Item, error){
+func (s *ItemService) Update(itemId uint, updateItemInput dto.UpdateItemInput) (*models.Item, error) {
 	targetItem, err := s.FindById(itemId)
 	if err != nil {
 		return nil, err
 	}
 
-	if updateItemInput.Name != nil{
+	if updateItemInput.Name != nil {
 		targetItem.Name = *updateItemInput.Name
 	}
 
-	if updateItemInput.Price != nil{
+	if updateItemInput.Price != nil {
 		targetItem.Price = *updateItemInput.Price
 	}
 
-	if updateItemInput.Description != nil{
+	if updateItemInput.Description != nil {
 		targetItem.Description = *updateItemInput.Description
 	}
 
-	if updateItemInput.SoldOut != nil{
+	if updateItemInput.SoldOut != nil {
 		targetItem.SoldOut = *updateItemInput.SoldOut
 	}
 	return s.repository.Update(*targetItem)
